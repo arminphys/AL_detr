@@ -47,8 +47,15 @@ class Transformer(nn.Module):
     def forward(self, src, mask, query_embed, pos_embed):
         # flatten NxCxHxW to HWxNxC
         bs, c, h, w = src.shape
+
+        # start_dim = 2, so HxW -> H*W
+        # permute takes the number of the source dimension that should got to the specific position in the argument list
         src = src.flatten(2).permute(2, 0, 1)
+        # pos_embed needs the same changes in shape
         pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
+
+        # 'query' in that context is what in the karpathy gpt is a token that is generated.
+        # We have 100 of them, the dimension here is 256. So a maximum of 100 Objects can be detected.
         query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.flatten(1)
 
