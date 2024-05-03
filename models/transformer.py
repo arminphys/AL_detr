@@ -55,12 +55,18 @@ class Transformer(nn.Module):
         pos_embed = pos_embed.flatten(2).permute(2, 0, 1)
 
         # 'query' in that context is what in the karpathy gpt is a token that is generated.
-        # We have 100 of them, the dimension here is 256. So a maximum of 100 Objects can be detected.
+        # We have 100 of them, the dimension of the embedding here is 256. So a maximum of 100 Objects can be detected.
+        # shape is (100, 256)
+        # This is then changed to (100, batch_size, 256) and the content is repeated for all batches.
+        # So we have queries for each image in the batch, all start the same.
         query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)
+        # We flatten the image dimensions of mask, so for every image in the batch we have a linear mask, that corresponds to the linear image content.
         mask = mask.flatten(1)
 
         tgt = torch.zeros_like(query_embed)
+        # memory contains the result of the encoder, this is then fed to each decoder layer.
         memory = self.encoder(src, src_key_padding_mask=mask, pos=pos_embed)
+        # we run the decoder
         hs = self.decoder(tgt, memory, memory_key_padding_mask=mask,
                           pos=pos_embed, query_pos=query_embed)
         return hs.transpose(1, 2), memory.permute(1, 2, 0).view(bs, c, h, w)
