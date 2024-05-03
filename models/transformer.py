@@ -64,7 +64,7 @@ class Transformer(nn.Module):
         mask = mask.flatten(1)
 
         tgt = torch.zeros_like(query_embed)
-        # memory contains the result of the encoder, this is then fed to each decoder layer.
+        # 'memory' contains the result of the encoder, this is then fed to each decoder layer.
         memory = self.encoder(src, src_key_padding_mask=mask, pos=pos_embed)
         # we run the decoder
         hs = self.decoder(tgt, memory, memory_key_padding_mask=mask,
